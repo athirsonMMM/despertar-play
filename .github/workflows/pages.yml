@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build v0.8.0
+      - name: Preparar build v0.8.1
         run: |
           mkdir -p _site
           cp index.html _site/index.html
@@ -40,6 +40,7 @@ jobs:
           python3 chapter4-patch-v076.py
           python3 systems-patch-v080.py
           python3 story-cap-v080.py
+          python3 mission-completion-patch-v081.py
 
       - name: Validar JavaScript da build
         run: |
