@@ -24,16 +24,64 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build v0.6.4
+      - name: Preparar build v0.6.5
         shell: bash
         run: |
           mkdir -p _site
           cp index.html _site/index.html
-          # Corrige o ponto inicial: na v0.6.3 o personagem nascia encostado/dentro da colisão de um obstáculo.
-          sed -i 's/x:520,y:610/x:540,y:540/g' _site/index.html
-          # Nova chave de save evita reaproveitar uma posição travada da v0.6.3.
-          sed -i 's/despertar-v063-save/despertar-v064-save/g' _site/index.html
-          sed -i 's/v0\.6\.3/v0.6.4/g' _site/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('_site/index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Versão e save limpo para não reaproveitar estado quebrado.
+          s = s.replace('v0.6.3', 'v0.6.5')
+          s = s.replace('despertar-v063-save', 'despertar-v065-save')
+
+          # Posição inicial completamente livre de colisões.
+          s = s.replace('x:520,y:610,r:18,speed:190', 'x:560,y:520,r:18,speed:190')
+
+          # Camada extra e independente de teclado. Usa KeyboardEvent.code,
+          # evitando problemas de layout/idioma/foco com e.key.
+          marker = "bindStick('moveStick',(x,y)=>moveVec={x,y});bindStick('attackStick',()=>{},true);"
+          robust = r'''bindStick('moveStick',(x,y)=>moveVec={x,y});bindStick('attackStick',()=>{},true);
+
+// v0.6.5: entrada robusta de movimento para teclado e touch.
+const moveCodeMap={KeyW:'w',KeyA:'a',KeyS:'s',KeyD:'d',ArrowUp:'arrowup',ArrowLeft:'arrowleft',ArrowDown:'arrowdown',ArrowRight:'arrowright'};
+window.addEventListener('keydown',e=>{
+  const k=moveCodeMap[e.code];
+  if(k){keys[k]=true;e.preventDefault();}
+  if(e.code==='KeyE'){interact();e.preventDefault();}
+},{passive:false});
+window.addEventListener('keyup',e=>{
+  const k=moveCodeMap[e.code];
+  if(k){keys[k]=false;e.preventDefault();}
+},{passive:false});
+window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;moveVec={x:0,y:0};});
+
+// Fallback touch explícito para navegadores móveis que não entregam pointermove de forma confiável.
+(()=>{
+  const el=document.getElementById('moveStick'),knob=el.querySelector('.knob');
+  const setTouch=(touch)=>{
+    const r=el.getBoundingClientRect();
+    let dx=touch.clientX-(r.left+r.width/2),dy=touch.clientY-(r.top+r.height/2);
+    const max=42,l=Math.hypot(dx,dy)||1;
+    if(l>max){dx=dx/l*max;dy=dy/l*max;}
+    moveVec={x:dx/max,y:dy/max};
+    knob.style.transform=`translate(${dx}px,${dy}px)`;
+  };
+  el.addEventListener('touchstart',e=>{if(e.touches[0])setTouch(e.touches[0]);e.preventDefault();},{passive:false});
+  el.addEventListener('touchmove',e=>{if(e.touches[0])setTouch(e.touches[0]);e.preventDefault();},{passive:false});
+  const stop=e=>{moveVec={x:0,y:0};knob.style.transform='translate(0,0)';e.preventDefault();};
+  el.addEventListener('touchend',stop,{passive:false});
+  el.addEventListener('touchcancel',stop,{passive:false});
+})();'''
+          if marker not in s:
+              raise SystemExit('Marcador do controle não encontrado')
+          s = s.replace(marker, robust, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
