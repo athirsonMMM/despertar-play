@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build v0.7.3
+      - name: Preparar build v0.7.4
         run: |
           mkdir -p _site
           cp index.html _site/index.html
@@ -34,6 +34,7 @@ jobs:
           python3 campaign-patch-v071.py
           python3 run-gameplay-v072.py
           python3 dialogue-patch-v073.py
+          python3 chapter2-patch-v074.py
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
