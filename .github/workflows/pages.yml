@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build v0.6.5
+      - name: Preparar build v0.6.6
         shell: bash
         run: |
           mkdir -p _site
@@ -34,19 +34,25 @@ jobs:
           p = Path('_site/index.html')
           s = p.read_text(encoding='utf-8')
 
-          # Versão e save limpo para não reaproveitar estado quebrado.
-          s = s.replace('v0.6.3', 'v0.6.5')
-          s = s.replace('despertar-v063-save', 'despertar-v065-save')
+          # Versão e save limpo.
+          s = s.replace('v0.6.3', 'v0.6.6')
+          s = s.replace('despertar-v063-save', 'despertar-v066-save')
 
-          # Posição inicial completamente livre de colisões.
+          # Posição inicial em área livre.
           s = s.replace('x:520,y:610,r:18,speed:190', 'x:560,y:520,r:18,speed:190')
 
-          # Camada extra e independente de teclado. Usa KeyboardEvent.code,
-          # evitando problemas de layout/idioma/foco com e.key.
+          # v0.6.6: remove a colisão do personagem com objetos/cenário.
+          # Mantém somente os limites externos do mapa para evitar sair da área jogável.
+          old_move = "function tryMove(nx,ny){const map=world==='city'?city:world==='guild'?guild:camp,obs=map.obstacles||[];nx=Math.max(28,Math.min(map.w-28,nx));ny=Math.max(28,Math.min(map.h-28,ny));let tx=nx,ty=player.y;if(!obs.some(o=>circleRectHit(tx,ty,player.r,o)))player.x=tx;tx=player.x;ty=ny;if(!obs.some(o=>circleRectHit(tx,ty,player.r,o)))player.y=ty}"
+          new_move = "function tryMove(nx,ny){const map=world==='city'?city:world==='guild'?guild:camp;player.x=Math.max(28,Math.min(map.w-28,nx));player.y=Math.max(28,Math.min(map.h-28,ny))}"
+          if old_move not in s:
+              raise SystemExit('Função tryMove original não encontrada')
+          s = s.replace(old_move, new_move, 1)
+
+          # Camada robusta de teclado/touch preservada da v0.6.5.
           marker = "bindStick('moveStick',(x,y)=>moveVec={x,y});bindStick('attackStick',()=>{},true);"
           robust = r'''bindStick('moveStick',(x,y)=>moveVec={x,y});bindStick('attackStick',()=>{},true);
 
-// v0.6.5: entrada robusta de movimento para teclado e touch.
 const moveCodeMap={KeyW:'w',KeyA:'a',KeyS:'s',KeyD:'d',ArrowUp:'arrowup',ArrowLeft:'arrowleft',ArrowDown:'arrowdown',ArrowRight:'arrowright'};
 window.addEventListener('keydown',e=>{
   const k=moveCodeMap[e.code];
@@ -59,7 +65,6 @@ window.addEventListener('keyup',e=>{
 },{passive:false});
 window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;moveVec={x:0,y:0};});
 
-// Fallback touch explícito para navegadores móveis que não entregam pointermove de forma confiável.
 (()=>{
   const el=document.getElementById('moveStick'),knob=el.querySelector('.knob');
   const setTouch=(touch)=>{
