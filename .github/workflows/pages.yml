@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build v0.7.5
+      - name: Preparar build v0.8.0
         run: |
           mkdir -p _site
           cp index.html _site/index.html
@@ -37,6 +37,23 @@ jobs:
           python3 chapter2-patch-v074.py
           python3 story-fix-v074.py
           python3 chapter3-patch-v075.py
+          python3 chapter4-patch-v076.py
+          python3 systems-patch-v080.py
+          python3 story-cap-v080.py
+
+      - name: Validar JavaScript da build
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('_site/index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>(.*?)</script>', html, flags=re.S)
+          if not scripts:
+              raise SystemExit('Nenhum JavaScript inline encontrado em index.html')
+          Path('/tmp/despertar-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/despertar-inline.js
+          node --check _site/story-v0.7.js
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
