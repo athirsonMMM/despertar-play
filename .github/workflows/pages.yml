@@ -24,19 +24,78 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build v0.7.0
+      - name: Preparar build v0.7.1
         shell: bash
         run: |
           mkdir -p _site
           cp index.html _site/index.html
           cp story-v0.7.css _site/story-v0.7.css
           cp story-v0.7.js _site/story-v0.7.js
-          sed -i 's/v0\.6\.3/v0.7.0/g' _site/index.html
-          sed -i 's/despertar-v063-save/despertar-v070-save/g' _site/index.html
-          sed -i 's/x:520,y:610,r:18,speed:190/x:560,y:520,r:18,speed:190/g' _site/index.html
-          perl -0777 -i -pe 's/function tryMove\(nx,ny\)\{.*?\}\nfunction hurtPlayer/function tryMove(nx,ny){const map=world===\x27city\x27?city:world===\x27guild\x27?guild:camp;player.x=Math.max(28,Math.min(map.w-28,nx));player.y=Math.max(28,Math.min(map.h-28,ny))}\nfunction hurtPlayer/s' _site/index.html
-          sed -i 's#</head>#<link rel="stylesheet" href="story-v0.7.css"></head>#' _site/index.html
-          sed -i 's#</body>#<script src="story-v0.7.js"></script></body>#' _site/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('_site/index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('v0.6.3','v0.7.1').replace('despertar-v063-save','despertar-v071-save')
+          s=s.replace('x:520,y:610,r:18,speed:190','x:560,y:520,r:18,speed:190')
+          old="function tryMove(nx,ny){const map=world==='city'?city:world==='guild'?guild:camp,obs=map.obstacles||[];nx=Math.max(28,Math.min(map.w-28,nx));ny=Math.max(28,Math.min(map.h-28,ny));let tx=nx,ty=player.y;if(!obs.some(o=>circleRectHit(tx,ty,player.r,o)))player.x=tx;tx=player.x;ty=ny;if(!obs.some(o=>circleRectHit(tx,ty,player.r,o)))player.y=ty}"
+          new="function tryMove(nx,ny){const map=world==='city'?city:world==='guild'?guild:camp;player.x=Math.max(28,Math.min(map.w-28,nx));player.y=Math.max(28,Math.min(map.h-28,ny))}"
+          s=s.replace(old,new)
+
+          marker="function setDialog(text,actions=[['Fechar',closeDialog]]){dialogText.innerHTML=text;dialogActions.innerHTML='';for(const [label,fn] of actions){const b=document.createElement('button');b.className='btn';b.textContent=label;b.onclick=fn;dialogActions.appendChild(b)}dialog.style.display='block'}function closeDialog(){dialog.style.display='none'}"
+          helpers=r'''function setDialog(text,actions=[['Fechar',closeDialog]]){dialogText.innerHTML=text;dialogActions.innerHTML='';for(const [label,fn] of actions){const b=document.createElement('button');b.className='btn';b.textContent=label;b.onclick=fn;dialogActions.appendChild(b)}dialog.style.display='block'}function closeDialog(){dialog.style.display='none'}
+function talkHelena(){
+ const base=`<b>Helena Duarte — Atendente da Guilda</b><br><br>Oi. Meu nome é <b>Helena Duarte</b>. Trabalho neste balcão desde que a Guilda reabriu as portas depois da Queda. Moro no setor leste da cidade com minha mãe e meu irmão mais novo.<br><br>Eu cuido dos registros, carteirinhas, recompensas e relatórios de missão.`;
+ if(mission===S.REPORT){setDialog(base+'<br><br>Você voltou da incursão. Se trouxe a prova da missão, eu posso registrar a conclusão agora.',[['Entregar prova',()=>{player.xp+=100;player.gold+=80;mission=S.CAPTAIN_AFTER;closeDialog();save();updateHud();toastMsg('Missão registrada e recompensa recebida!')}],['Conversar um pouco',()=>helenaVida()],['Depois',closeDialog]]);return}
+ const actions=[];
+ if(mission===S.REGISTER)actions.push(['Fazer meu registro',()=>helenaRegistro()]);
+ actions.push(['Quem é você?',()=>helenaVida()],['Como funciona a Guilda?',()=>helenaGuilda()],['Encerrar',closeDialog]);
+ setDialog(base,actions)
+}
+function helenaVida(){setDialog('<b>Helena Duarte</b><br><br>Antes da invasão eu estudava administração. Depois que os portais apareceram, papéis viraram fichas de racionamento, listas de desaparecidos e registros de Despertos. Acabei ficando boa nisso.<br><br>Meu pai desapareceu durante a evacuação da zona sul. Desde então, minha família ficou aqui. Não é uma vida tranquila, mas esta cidade virou nossa casa.',[['E a Guilda?',()=>helenaGuilda()],['Voltar',()=>talkHelena()],['Encerrar',closeDialog]])}
+function helenaGuilda(){setDialog('<b>Helena Duarte</b><br><br>A Guilda foi criada quando os primeiros Despertos perceberam que entrar em portais sem organização matava mais gente do que salvava. Ela registra aventureiros, classifica riscos, distribui missões e tenta impedir que novatos entrem em incursões acima do próprio nível.<br><br>O Rank F é o começo. Seu histórico de missões é o que vai provar se você pode subir.',mission===S.REGISTER?[['Continuar e fazer o registro',()=>helenaRegistro()],['Voltar',()=>talkHelena()],['Pular explicação',()=>helenaRegistro()]]:[['Voltar',()=>talkHelena()],['Encerrar',closeDialog]])}
+function helenaRegistro(){setDialog(`<b>Helena Duarte</b><br><br>Certo, ${player.name}. Vou registrar seu nome, sua classe e seu Despertar. A partir de hoje, você responde oficialmente à Guilda durante missões registradas.<br><br>Sua primeira identificação será <b>Rank F</b>.`,[['Concluir registro',()=>{player.guildRegistered=true;player.guildCard=true;mission=S.CAPTAIN;closeDialog();save();updateHud();toastMsg('Carteirinha Rank F recebida!')}],['Voltar',()=>talkHelena()]])}
+function talkRaul(){
+ const base='<b>Raul Vilar — Capitão de Incursões</b><br><br>Raul Vilar. Capitão de incursões desta filial. Antes da Queda eu era sargento do Exército; hoje meu trabalho é decidir quem entra num portal e aumentar a chance de essa pessoa voltar.';
+ if(mission===S.CAPTAIN){setDialog(base+'<br><br>Helena já concluiu seu registro. Seu histórico está vazio, então vou começar com algo simples: uma infestação de Goblins num portal de baixa instabilidade.',[['Quem é você?',()=>raulVida()],['Explique a missão',()=>raulMissao()],['Ir direto ao quadro',()=>{mission=S.BOARD;closeDialog();save();updateHud()}],['Encerrar',closeDialog]]);return}
+ if(mission===S.CAPTAIN_AFTER){setDialog(base+'<br><br>Você voltou vivo e concluiu a primeira missão. Isso vale mais que qualquer discurso. A partir de agora seu nome começa a existir nos registros da Guilda.',[['E agora?',()=>{mission=S.DONE;closeDialog();save();updateHud();toastMsg('Tutorial concluído!')}],['Conversar mais',()=>raulVida()],['Encerrar',closeDialog]]);return}
+ setDialog(base,[['Sobre você',()=>raulVida()],['Sobre a cidade',()=>raulCidade()],['Encerrar',closeDialog]])
+}
+function raulVida(){setDialog('<b>Raul Vilar</b><br><br>Eu cheguei aqui com uma coluna de sobreviventes três meses depois da primeira onda. Minha esposa não chegou. Desde então fiquei responsável pelos grupos de incursão. Não gosto de mandar gente para lugares onde eu mesmo não pisaria.<br><br>Se eu disser para recuar, recue. Orgulho mata mais aventureiros do que monstros.',[['Sobre a cidade',()=>raulCidade()],['Voltar',()=>talkRaul()],['Encerrar',closeDialog]])}
+function raulCidade(){setDialog('<b>Raul Vilar</b><br><br>Esta cidade nasceu de três abrigos que acabaram se juntando. A muralha veio depois. A Guilda, a oficina e o mercado surgiram porque sobreviver isolado deixou de funcionar.<br><br>Ainda perdemos gente. Mas agora também recuperamos território.',[['Voltar',()=>talkRaul()],['Encerrar',closeDialog]])}
+function raulMissao(){setDialog('<b>Raul Vilar</b><br><br>O portal está estável o bastante para uma incursão curta. Entre, elimine <b>5 Goblins</b> e retorne pelo mesmo ponto. Não persiga nada para além do acampamento.<br><br>Quando voltar, entregue a prova da missão para Helena. Depois venha falar comigo.',[['Entendido. Vou ao quadro.',()=>{mission=S.BOARD;closeDialog();save();updateHud()}],['Voltar',()=>talkRaul()]])}
+function talkBreno(){setDialog('<b>Breno Carvalho — Ferreiro</b><br><br>Sou o Breno. Esta oficina era uma borracharia antes do mundo acabar. Aprendi a forjar porque ninguém mais ia fabricar peças para nós.<br><br>Hoje eu conserto armas, armaduras e qualquer coisa que mantenha um Desperto inteiro por mais um dia.',[['Como você chegou aqui?',()=>setDialog('<b>Breno Carvalho</b><br><br>Vim com minha filha e dois vizinhos. Só minha filha chegou comigo. Ela ajuda na cozinha comunitária enquanto eu fico na forja. Um dia ainda quero transformar este barraco numa oficina de verdade.',['Voltar',()=>talkBreno()],['Encerrar',closeDialog]])],['Sobre equipamentos',()=>setDialog('<b>Breno Carvalho</b><br><br>Equipamento bom não é o mais bonito. É o que você conhece. Peso, equilíbrio, desgaste, reparo. Quando a oficina estiver totalmente aberta para aventureiros, traga seus materiais e eu vejo o que dá para fazer.',['Voltar',()=>talkBreno()],['Encerrar',closeDialog]])],['Encerrar',closeDialog]])}
+function talkDavi(){setDialog('<b>Davi Moura — Sobrevivente</b><br><br>Oi. Davi Moura. Não sou Desperto. Trabalho carregando água, madeira e o que mais a cidade precisar.<br><br>Nem todo mundo que sobreviveu ganhou poderes. A maioria de nós só aprendeu a continuar.',[['Como é viver aqui?',()=>setDialog('<b>Davi Moura</b><br><br>Tem dias bons e dias em que o alarme toca três vezes. A gente trabalha, troca comida, ajuda nas patrulhas e tenta não pensar demais no que ficou lá fora. Minha mulher cuida das hortas perto da muralha norte.',['Voltar',()=>talkDavi()],['Encerrar',closeDialog]])],['Encerrar',closeDialog]])}
+function talkCaio(){setDialog('<b>Caio Nunes — Aventureiro Rank F</b><br><br>Primeira vez aqui? Eu sou o Caio. Também comecei no Rank F faz pouco tempo. Se Helena mandar você decorar regra demais, só concorda e continua respirando.',[['Algum conselho?',()=>setDialog('<b>Caio Nunes</b><br><br>Não corra atrás de monstro ferido sem olhar em volta. Goblin adora usar um deles como isca. Aprendi isso tomando uma lança na perna.',['Voltar',()=>talkCaio()],['Encerrar',closeDialog]])],['Encerrar',closeDialog]])}
+function talkMirela(){setDialog('<b>Mirela Santos — Aventureira Rank E</b><br><br>Mirela. Rank E. Estou esperando autorização para uma patrulha nas ruínas. Você é novo, né? Dá para ver pela carteirinha limpa.',[['Sobre os Ranks',()=>setDialog('<b>Mirela Santos</b><br><br>Não tenha pressa para subir. Rank abre portas, mas também aumenta o tipo de missão que esperam que você aceite. Faça seu histórico direito primeiro.',['Voltar',()=>talkMirela()],['Encerrar',closeDialog]])],['Encerrar',closeDialog]])}'''
+          if marker not in s: raise SystemExit('dialog marker not found')
+          s=s.replace(marker,helpers,1)
+
+          old_city=""" if(world==='city'){\n  if(near(city.guildDoor,78)){enterGuild();return}\n  if(near(city.portal,86)&&mission===S.PORTAL){setDialog('<b>Portal Rank F</b><br>Missão ativa: Infestação de Goblins',[['Entrar',()=>{closeDialog();enterCamp()}],['Cancelar',closeDialog]]);return}\n }"""
+          new_city=""" if(world==='city'){\n  if(near(city.guildDoor,78)){enterGuild();return}\n  if(near({x:470,y:500},72)){talkDavi();return}\n  if(near({x:1080,y:480},72)){talkBreno();return}\n  if(near(city.portal,86)&&mission===S.PORTAL){setDialog('<b>Portal Rank F</b><br>Missão ativa: Infestação de Goblins',[['Entrar',()=>{closeDialog();enterCamp()}],['Cancelar',closeDialog]]);return}\n }"""
+          if old_city not in s: raise SystemExit('city interaction block not found')
+          s=s.replace(old_city,new_city,1)
+
+          start=s.index("  if(near(guild.reception,72)){",s.index("if(world==='guild')"))
+          end=s.index("  if(near(guild.board,68)){",start)
+          new_npcs="""  if(near(guild.reception,72)){talkHelena();return}\n  if(near(guild.captain,72)){talkRaul();return}\n  if(near({x:520,y:290},70)){talkCaio();return}\n  if(near({x:570,y:360},70)){talkMirela();return}\n"""
+          s=s[:start]+new_npcs+s[end:]
+
+          s=s.replace("npc(470,500,'Sobrevivente'","npc(470,500,'Davi Moura'")
+          s=s.replace("npc(1080,480,'Ferreiro'","npc(1080,480,'Breno Carvalho'")
+          s=s.replace("npc(guild.reception.x,guild.reception.y,'Atendente'","npc(guild.reception.x,guild.reception.y,'Helena Duarte'")
+          s=s.replace("npc(guild.captain.x,guild.captain.y,'Capitão'","npc(guild.captain.x,guild.captain.y,'Raul Vilar'")
+          s=s.replace("npc(520,290,'Aventureiro'","npc(520,290,'Caio Nunes'")
+          s=s.replace("npc(570,360,'Aventureira'","npc(570,360,'Mirela Santos'")
+
+          old_hint="function currentInteract(){if(!player)return'';if(world==='city'){if(near(city.guildDoor,82))return'Entrar na Guilda';if(near(city.portal,82)&&mission===S.PORTAL)return'Portal Rank F'}if(world==='guild'){if(near(guild.exit,82))return'Sair da Guilda';if(near(guild.reception,78))return'Atendente';if(near(guild.captain,78))return'Capitão';if(near(guild.board,78))return'Quadro de Missões'}if(world==='camp'&&goblins.filter(g=>g.dead).length>=5&&near(camp.returnPortal,82))return'Portal de retorno';return''}"
+          new_hint="function currentInteract(){if(!player)return'';if(world==='city'){if(near(city.guildDoor,82))return'Entrar na Guilda';if(near({x:470,y:500},78))return'Davi Moura';if(near({x:1080,y:480},78))return'Breno Carvalho';if(near(city.portal,82)&&mission===S.PORTAL)return'Portal Rank F'}if(world==='guild'){if(near(guild.exit,82))return'Sair da Guilda';if(near(guild.reception,78))return'Helena Duarte';if(near(guild.captain,78))return'Raul Vilar';if(near({x:520,y:290},76))return'Caio Nunes';if(near({x:570,y:360},76))return'Mirela Santos';if(near(guild.board,78))return'Quadro de Missões'}if(world==='camp'&&goblins.filter(g=>g.dead).length>=5&&near(camp.returnPortal,82))return'Portal de retorno';return''}"
+          if old_hint not in s: raise SystemExit('hint function not found')
+          s=s.replace(old_hint,new_hint,1)
+
+          s=s.replace('</head>','<link rel="stylesheet" href="story-v0.7.css"></head>')
+          s=s.replace('</body>','<script src="story-v0.7.js"></script></body>')
+          p.write_text(s,encoding='utf-8')
+          PY
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
