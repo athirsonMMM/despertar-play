@@ -24,13 +24,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Preparar build v0.6.4
+        shell: bash
+        run: |
+          mkdir -p _site
+          cp index.html _site/index.html
+          # Corrige o ponto inicial: na v0.6.3 o personagem nascia encostado/dentro da colisão de um obstáculo.
+          sed -i 's/x:520,y:610/x:540,y:540/g' _site/index.html
+          # Nova chave de save evita reaproveitar uma posição travada da v0.6.3.
+          sed -i 's/despertar-v063-save/despertar-v064-save/g' _site/index.html
+          sed -i 's/v0\.6\.3/v0.6.4/g' _site/index.html
+
       - name: Configurar Pages
         uses: actions/configure-pages@v5
 
       - name: Enviar site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Publicar
         id: deployment
