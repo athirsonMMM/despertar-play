@@ -24,12 +24,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build v0.8.1
+      - name: Preparar build v0.9.0
         run: |
           mkdir -p _site
           cp index.html _site/index.html
           cp story-v0.7.css _site/story-v0.7.css
           cp story-v0.7.js _site/story-v0.7.js
+          cp -r assets _site/assets
           python3 build-v071.py
           python3 campaign-patch-v071.py
           python3 run-gameplay-v072.py
@@ -41,9 +42,20 @@ jobs:
           python3 systems-patch-v080.py
           python3 story-cap-v080.py
           python3 mission-completion-patch-v081.py
+          python3 visual-overhaul-v090.py
 
-      - name: Validar JavaScript da build
+      - name: Validar build v0.9.0
         run: |
+          test -f _site/assets/scenes/city.svg
+          test -f _site/assets/scenes/guild.svg
+          test -f _site/assets/sprites/guerreiro.svg
+          test -f _site/assets/sprites/mago.svg
+          test -f _site/assets/sprites/arqueiro.svg
+          test -f _site/assets/sprites/ladino.svg
+          test -f _site/assets/sprites/elena-portrait.svg
+          grep -q 'v0.9.0' _site/index.html
+          grep -q 'sceneLayer' _site/index.html
+          grep -q 'sideCombatWorld' _site/index.html
           python3 - <<'PY'
           from pathlib import Path
           import re
