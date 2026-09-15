@@ -35,6 +35,7 @@ jobs:
           python3 run-gameplay-v072.py
           python3 dialogue-patch-v073.py
           python3 chapter2-patch-v074.py
+          python3 story-fix-v074.py
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
