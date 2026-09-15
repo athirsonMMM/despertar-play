@@ -31,34 +31,12 @@ jobs:
           cp index.html _site/index.html
           cp story-v0.7.css _site/story-v0.7.css
           cp story-v0.7.js _site/story-v0.7.js
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('_site/index.html')
-          s=p.read_text(encoding='utf-8')
-
-          s=s.replace('v0.6.3','v0.7.0')
-          s=s.replace('despertar-v063-save','despertar-v070-save')
-          s=s.replace('x:520,y:610,r:18,speed:190','x:560,y:520,r:18,speed:190')
-
-          old_move="function tryMove(nx,ny){const map=world==='city'?city:world==='guild'?guild:camp,obs=map.obstacles||[];nx=Math.max(28,Math.min(map.w-28,nx));ny=Math.max(28,Math.min(map.h-28,ny));let tx=nx,ty=player.y;if(!obs.some(o=>circleRectHit(tx,ty,player.r,o)))player.x=tx;tx=player.x;ty=ny;if(!obs.some(o=>circleRectHit(tx,ty,player.r,o)))player.y=ty}"
-          new_move="function tryMove(nx,ny){const map=world==='city'?city:world==='guild'?guild:camp;player.x=Math.max(28,Math.min(map.w-28,nx));player.y=Math.max(28,Math.min(map.h-28,ny))}"
-          if old_move in s:
-              s=s.replace(old_move,new_move,1)
-
-          marker="bindStick('moveStick',(x,y)=>moveVec={x,y});bindStick('attackStick',()=>{},true);"
-          robust=r'''bindStick('moveStick',(x,y)=>moveVec={x,y});bindStick('attackStick',()=>{},true);
-const moveCodeMap={KeyW:'w',KeyA:'a',KeyS:'s',KeyD:'d',ArrowUp:'arrowup',ArrowLeft:'arrowleft',ArrowDown:'arrowdown',ArrowRight:'arrowright'};
-window.addEventListener('keydown',e=>{const k=moveCodeMap[e.code];if(k){keys[k]=true;e.preventDefault()}if(e.code==='KeyE'){interact();e.preventDefault()}},{passive:false});
-window.addEventListener('keyup',e=>{const k=moveCodeMap[e.code];if(k){keys[k]=false;e.preventDefault()}},{passive:false});
-window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;moveVec={x:0,y:0}});
-(()=>{const el=document.getElementById('moveStick'),knob=el.querySelector('.knob');const setTouch=t=>{const r=el.getBoundingClientRect();let dx=t.clientX-(r.left+r.width/2),dy=t.clientY-(r.top+r.height/2),max=42,l=Math.hypot(dx,dy)||1;if(l>max){dx=dx/l*max;dy=dy/l*max}moveVec={x:dx/max,y:dy/max};knob.style.transform=`translate(${dx}px,${dy}px)`};el.addEventListener('touchstart',e=>{if(e.touches[0])setTouch(e.touches[0]);e.preventDefault()},{passive:false});el.addEventListener('touchmove',e=>{if(e.touches[0])setTouch(e.touches[0]);e.preventDefault()},{passive:false});const stop=e=>{moveVec={x:0,y:0};knob.style.transform='translate(0,0)';e.preventDefault()};el.addEventListener('touchend',stop,{passive:false});el.addEventListener('touchcancel',stop,{passive:false})})();'''
-          if marker in s:
-              s=s.replace(marker,robust,1)
-
-          s=s.replace('</head>','<link rel="stylesheet" href="story-v0.7.css"></head>',1)
-          s=s.replace('</body>','<script src="story-v0.7.js"></script></body>',1)
-          p.write_text(s,encoding='utf-8')
-          PY
+          sed -i 's/v0\.6\.3/v0.7.0/g' _site/index.html
+          sed -i 's/despertar-v063-save/despertar-v070-save/g' _site/index.html
+          sed -i 's/x:520,y:610,r:18,speed:190/x:560,y:520,r:18,speed:190/g' _site/index.html
+          perl -0777 -i -pe 's/function tryMove\(nx,ny\)\{.*?\}\nfunction hurtPlayer/function tryMove(nx,ny){const map=world===\x27city\x27?city:world===\x27guild\x27?guild:camp;player.x=Math.max(28,Math.min(map.w-28,nx));player.y=Math.max(28,Math.min(map.h-28,ny))}\nfunction hurtPlayer/s' _site/index.html
+          sed -i 's#</head>#<link rel="stylesheet" href="story-v0.7.css"></head>#' _site/index.html
+          sed -i 's#</body>#<script src="story-v0.7.js"></script></body>#' _site/index.html
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
