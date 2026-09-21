@@ -24,14 +24,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build browser MMORPG v1.0
+      - name: Preparar build browser MMORPG v1.0.1
         run: |
           rm -rf _site
           mkdir -p _site
           cp index.html app.css app.js art.js _site/
           cp -r assets _site/assets
 
-      - name: Validar build v1.0
+      - name: Validar build v1.0.1
         run: |
           test -f _site/index.html
           test -f _site/app.css
@@ -44,13 +44,16 @@ jobs:
           test -f _site/assets/real/arqueiro-sheet.png
           test -f _site/assets/real/ladino-sheet.png
           test -f _site/assets/real/elena.webp
-          grep -q 'DESPERTAR ONLINE v1.0' _site/index.html
+          grep -q 'DESPERTAR ONLINE v1.0.1' _site/index.html
           grep -q 'data-page="guild"' _site/index.html
           grep -q "KeyW" _site/app.js
           grep -q "KeyA" _site/app.js
           grep -q "KeyS" _site/app.js
           grep -q "KeyD" _site/app.js
           grep -q "Infestação de Goblins" _site/app.js
+          grep -q "battleScene" _site/app.js
+          grep -q "ShiftLeft" _site/app.js
+          grep -q "battle-mobile-controls" _site/app.css
           node --check _site/app.js
           node --check _site/art.js
           python3 - <<'PY'
