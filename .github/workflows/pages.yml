@@ -37,12 +37,13 @@ jobs:
           test -f _site/app.css
           test -f _site/app.js
           test -f _site/art.js
-          test -f _site/assets/scenes/city.svg
-          test -f _site/assets/scenes/guild.svg
-          test -f _site/assets/sprites/guerreiro.svg
-          test -f _site/assets/sprites/mago.svg
-          test -f _site/assets/sprites/arqueiro.svg
-          test -f _site/assets/sprites/ladino.svg
+          test -f _site/assets/real/city.webp
+          test -f _site/assets/real/guild.webp
+          test -f _site/assets/real/guerreiro-sheet.png
+          test -f _site/assets/real/mago-sheet.png
+          test -f _site/assets/real/arqueiro-sheet.png
+          test -f _site/assets/real/ladino-sheet.png
+          test -f _site/assets/real/elena.webp
           grep -q 'DESPERTAR ONLINE v1.0' _site/index.html
           grep -q 'data-page="guild"' _site/index.html
           grep -q "KeyW" _site/app.js
