@@ -1,0 +1,9 @@
+window.DESPERTAR_ART={
+  scenes:{city:'assets/scenes/city.svg',guild:'assets/scenes/guild.svg'},
+  classes:{
+    Guerreiro:{front:'assets/sprites/guerreiro.svg',left:'assets/sprites/guerreiro.svg',right:'assets/sprites/guerreiro.svg'},
+    Mago:{front:'assets/sprites/mago.svg',left:'assets/sprites/mago.svg',right:'assets/sprites/mago.svg'},
+    Arqueiro:{front:'assets/sprites/arqueiro.svg',left:'assets/sprites/arqueiro.svg',right:'assets/sprites/arqueiro.svg'},
+    Ladino:{front:'assets/sprites/ladino.svg',left:'assets/sprites/ladino.svg',right:'assets/sprites/ladino.svg'}
+  }
+};
