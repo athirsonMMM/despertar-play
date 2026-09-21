@@ -1,89 +1,90 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Despertar v0.6.3</title>
-<style>
-html,body{margin:0;height:100%;background:#0d0f12;color:#eee;font-family:system-ui,Arial,sans-serif;overflow:hidden}#app{height:100%;display:grid;place-items:center}#wrap{position:relative;width:min(100vw,960px);aspect-ratio:16/9;background:#17191d;box-shadow:0 0 0 1px #343943 inset}canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none}.screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#17191dee,#0e0f12f5);z-index:20}.panel{width:min(86%,620px);background:#171a20;border:1px solid #4b5260;border-radius:12px;padding:22px;box-shadow:0 18px 50px #0008}.row{display:flex;gap:10px;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.muted{color:#aeb6c4}button,input{font:inherit}.btn{padding:12px 16px;border-radius:8px;border:1px solid #596273;background:#272c35;color:#fff;cursor:pointer}.btn.primary{background:#32466a}input{width:100%;box-sizing:border-box;padding:12px;border-radius:8px;border:1px solid #4c5666;background:#0f1217;color:#fff;margin:5px 0 12px}.choice{padding:12px;border:1px solid #4c5666;border-radius:8px;background:#20242c;cursor:pointer}.choice.sel{outline:2px solid #91b4ff}#hud{position:absolute;inset:0;pointer-events:none;z-index:5}.topbar{display:flex;gap:8px;padding:10px;align-items:center;flex-wrap:wrap}.chip{background:#111b;border:1px solid #ffffff22;border-radius:8px;padding:7px 10px}.objective{position:absolute;left:10px;top:60px;max-width:460px;background:#111c;border:1px solid #ffffff22;border-radius:8px;padding:9px 11px}.hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:#111e;border:1px solid #ffffff33;padding:8px 12px;border-radius:8px;white-space:nowrap}.bar{display:inline-block;width:110px;height:10px;background:#222;border-radius:10px;overflow:hidden;vertical-align:middle}.fill{display:block;height:100%}.hp{background:#b84b4b}.mana{background:#4b79c7}.stam{background:#c69a42}#dialog{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:min(88%,700px);background:#111ef;border:1px solid #ffffff33;border-radius:10px;padding:14px;z-index:12;display:none}.dialog-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.dialog-actions button{pointer-events:auto}#touch{position:absolute;inset:0;pointer-events:none;z-index:8;display:none}.stick{position:absolute;width:132px;height:132px;border-radius:50%;border:2px solid #ffffff33;background:#0003;pointer-events:auto;touch-action:none}.stick .knob{position:absolute;left:42px;top:42px;width:48px;height:48px;border-radius:50%;background:#ffffff55}.moveStick{left:18px;bottom:18px}.attackStick{right:18px;bottom:18px}.stickLabel{position:absolute;inset:auto 0 -23px;text-align:center;font-size:12px;color:#ccd}#interactBtn{position:absolute;right:172px;bottom:58px;width:82px;height:82px;border-radius:50%;border:2px solid #ffffff45;background:#233148dd;color:#fff;font-weight:700;pointer-events:auto;display:none;touch-action:none}#toast{position:absolute;right:12px;top:12px;background:#111e;border:1px solid #ffffff2c;border-radius:8px;padding:10px 12px;z-index:14;display:none}.dangerFlash{position:absolute;inset:0;pointer-events:none;background:#c22;opacity:0;z-index:6}
-@media (pointer:coarse),(max-width:700px){#touch{display:block}#interactBtn{display:block}.hint{bottom:160px}.topbar{font-size:11px}.bar{width:68px}.objective{top:82px;font-size:12px;max-width:72%}}
-</style></head>
-<body><div id="app"><div id="wrap">
-<canvas id="game" width="960" height="540"></canvas>
-<div id="hud" style="display:none"><div class="topbar"><span class="chip" id="who"></span><span class="chip">HP <span class="bar"><span id="hpFill" class="fill hp"></span></span></span><span class="chip" id="resourceChip"></span><span class="chip" id="goldChip">Ouro 0</span><span class="chip" id="cardChip">Sem registro</span></div><div class="objective" id="objective"></div><div class="hint" id="hint" style="display:none"></div></div>
-<div class="dangerFlash" id="dangerFlash"></div><div id="dialog"><div id="dialogText"></div><div class="dialog-actions" id="dialogActions"></div></div><div id="toast"></div>
-<div id="touch"><div class="stick moveStick" id="moveStick"><div class="knob"></div><div class="stickLabel">Mover</div></div><button id="interactBtn">INTERAGIR</button><div class="stick attackStick" id="attackStick"><div class="knob"></div><div class="stickLabel">Atacar / mirar</div></div></div>
-<div class="screen" id="menuScreen"><div class="panel"><h1>DESPERTAR <small style="font-size:.35em;color:#9aa">v0.6.3</small></h1><p class="muted">Tutorial da Guilda — registro Rank F e primeira missão.</p><div class="row"><button class="btn primary" id="newBtn">Novo jogo</button><button class="btn" id="continueBtn">Continuar</button></div></div></div>
-<div class="screen" id="createScreen" style="display:none"><div class="panel"><h2>Criação do personagem</h2><label>Nome</label><input id="nameInput" maxlength="18" placeholder="Nome do personagem"/><div class="row" style="margin-bottom:12px"><div class="choice sel sex" data-sex="Masculino">Masculino</div><div class="choice sex" data-sex="Feminino">Feminino</div></div><div class="grid"><div class="choice cls sel" data-class="Guerreiro"><b>Guerreiro</b><br><span class="muted">Corpo a corpo</span></div><div class="choice cls" data-class="Mago"><b>Mago</b><br><span class="muted">Ataque mágico</span></div><div class="choice cls" data-class="Arqueiro"><b>Arqueiro</b><br><span class="muted">Ataque à distância</span></div><div class="choice cls" data-class="Ladino"><b>Ladino</b><br><span class="muted">Ataques rápidos</span></div></div><p class="muted">A classe fica travada após a confirmação.</p><div class="row"><button class="btn" id="backBtn">Voltar</button><button class="btn primary" id="confirmBtn">Confirmar personagem</button></div></div></div>
-</div></div>
-<script>
-(()=>{
-const c=document.getElementById('game'),ctx=c.getContext('2d'),W=c.width,H=c.height;const hud=document.getElementById('hud'),objective=document.getElementById('objective'),hint=document.getElementById('hint'),dialog=document.getElementById('dialog'),dialogText=document.getElementById('dialogText'),dialogActions=document.getElementById('dialogActions'),toast=document.getElementById('toast'),dangerFlash=document.getElementById('dangerFlash');
-const SAVE='despertar-v063-save';
-const S={GO_GUILD:'go_guild',REGISTER:'register',CAPTAIN:'captain_intro',BOARD:'board',PORTAL:'portal',GOBLINS:'goblins',RETURN_GUILD:'return_guild',REPORT:'report',CAPTAIN_AFTER:'captain_after',DONE:'done'};
-let player=null,world='city',mission=S.GO_GUILD,goblins=[],projectiles=[],keys={},mouse={x:W/2,y:H/2},cam={x:0,y:0},moveVec={x:0,y:0},selectedSex='Masculino',selectedClass='Guerreiro',last=performance.now(),saveTimer=0;
-const city={w:1600,h:900,guildDoor:{x:790,y:290,r:35},portal:{x:1370,y:690,r:38},obstacles:[{x:610,y:120,w:360,h:145},{x:610,y:265,w:135,h:35},{x:835,y:265,w:135,h:35},{x:350,y:620,w:170,h:70},{x:1020,y:590,w:180,h:80}]};
-const guild={w:1100,h:720,exit:{x:540,y:665,r:34},reception:{x:250,y:245,r:22},captain:{x:755,y:285,r:24},board:{x:850,y:285,r:22},counter:{x:120,y:175,w:300,h:60},obstacles:[{x:120,y:175,w:300,h:60},{x:120,y:115,w:20,h:120},{x:400,y:115,w:20,h:120},{x:620,y:120,w:300,h:40}]};
-const camp={w:1300,h:760,returnPortal:{x:110,y:640,r:36},obstacles:[{x:420,y:130,w:85,h:90},{x:700,y:140,w:85,h:90},{x:870,y:420,w:90,h:95},{x:555,y:360,w:80,h:42}]};
-function P(name,sex,cls){return{name,sex,class:cls,classLocked:true,level:1,rank:'F',guildRegistered:false,guildCard:false,x:520,y:610,r:18,speed:190,hp:100,maxHp:100,mana:30,maxMana:30,stamina:40,maxStamina:40,gold:0,xp:0,facing:{x:1,y:0}}}
-function spawnGoblins(){goblins=[{x:470,y:220},{x:680,y:190},{x:820,y:330},{x:620,y:470},{x:930,y:500}].map((g,i)=>({...g,r:18,hp:28,maxHp:28,dead:false,id:i,state:'idle',cooldown:.6+Math.random(),windup:0,attackX:0,attackY:0}))}
-function save(){if(!player)return;localStorage.setItem(SAVE,JSON.stringify({player,world,mission,goblins:goblins.map(g=>({x:g.x,y:g.y,hp:g.hp,dead:g.dead,state:g.state,cooldown:g.cooldown,windup:g.windup,attackX:g.attackX,attackY:g.attackY}))}))}
-function load(){try{const s=JSON.parse(localStorage.getItem(SAVE));if(!s)return false;player=s.player;world=s.world||'city';mission=s.mission||S.GO_GUILD;if(world==='camp'){spawnGoblins();(s.goblins||[]).forEach((v,i)=>Object.assign(goblins[i],v))}showGame();return true}catch{return false}}
-function showGame(){document.querySelectorAll('.screen').forEach(x=>x.style.display='none');hud.style.display='block';updateHud()}
-function toastMsg(t){toast.textContent=t;toast.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>toast.style.display='none',1600)}
-function setDialog(text,actions=[['Fechar',closeDialog]]){dialogText.innerHTML=text;dialogActions.innerHTML='';for(const [label,fn] of actions){const b=document.createElement('button');b.className='btn';b.textContent=label;b.onclick=fn;dialogActions.appendChild(b)}dialog.style.display='block'}function closeDialog(){dialog.style.display='none'}
-function objectiveText(){if(world==='camp'&&mission===S.GOBLINS){const n=goblins.filter(g=>g.dead).length;return n>=5?'Missão concluída. Volte pelo portal.':`Elimine Goblins (${n}/5)`}return({[S.GO_GUILD]:'Entre na Guilda dos Aventureiros.',[S.REGISTER]:'Fale com a Atendente e faça seu registro.',[S.CAPTAIN]:'Fale com o Capitão ao lado do Quadro.',[S.BOARD]:'Consulte o Quadro de Missões e aceite a missão dos Goblins.',[S.PORTAL]:'Saia da Guilda e vá até o Portal Rank F.',[S.RETURN_GUILD]:'Retorne à Guilda para entregar a prova da missão.',[S.REPORT]:'Fale com a Atendente para registrar a conclusão.',[S.CAPTAIN_AFTER]:'Fale com o Capitão após receber a recompensa.',[S.DONE]:'Tutorial principal concluído.'})[mission]||''}
-function updateHud(){if(!player)return;document.getElementById('who').textContent=`${player.name} • ${player.class} • Nv.${player.level} • Rank ${player.rank}`;document.getElementById('hpFill').style.width=`${100*player.hp/player.maxHp}%`;const rc=document.getElementById('resourceChip');rc.innerHTML=player.class==='Mago'?`Mana <span class="bar"><span class="fill mana" style="width:${100*player.mana/player.maxMana}%"></span></span>`:`Estamina <span class="bar"><span class="fill stam" style="width:${100*player.stamina/player.maxStamina}%"></span></span>`;document.getElementById('goldChip').textContent=`Ouro ${player.gold}`;document.getElementById('cardChip').textContent=player.guildCard?'Carteirinha Rank F':'Sem registro';objective.innerHTML='<b>Objetivo:</b> '+objectiveText()}
-function near(o,d=68){return Math.hypot(player.x-o.x,player.y-o.y)<d}
-function enterGuild(){world='guild';player.x=540;player.y=610;if(mission===S.GO_GUILD)mission=S.REGISTER;save();updateHud();toastMsg('Guilda dos Aventureiros')}
-function exitGuild(){world='city';player.x=790;player.y=340;save();updateHud()}
-function interact(){if(!player||dialog.style.display==='block')return;
- if(world==='city'){
-  if(near(city.guildDoor,78)){enterGuild();return}
-  if(near(city.portal,86)&&mission===S.PORTAL){setDialog('<b>Portal Rank F</b><br>Missão ativa: Infestação de Goblins',[['Entrar',()=>{closeDialog();enterCamp()}],['Cancelar',closeDialog]]);return}
- }
- if(world==='guild'){
-  if(near(guild.exit,82)){exitGuild();return}
-  if(near(guild.reception,72)){
-   if(mission===S.REGISTER)setDialog('<b>Atendente da Guilda:</b> Bem-vindo. Vou registrar você oficialmente como aventureiro iniciante.<br><br>Você receberá sua <b>Carteirinha Rank F</b>.',[['Registrar',()=>{player.guildRegistered=true;player.guildCard=true;mission=S.CAPTAIN;closeDialog();save();updateHud();toastMsg('Carteirinha Rank F recebida!')}]]);
-   else if(mission===S.REPORT)setDialog('<b>Atendente da Guilda:</b> Recebi a prova da sua missão. A conclusão foi registrada.<br><br><b>+100 EXP<br>+80 Ouro</b>',[['Entregar prova e receber recompensa',()=>{player.xp+=100;player.gold+=80;mission=S.CAPTAIN_AFTER;closeDialog();save();updateHud();toastMsg('Missão registrada e recompensa recebida!')}]]);
-   else setDialog('<b>Atendente da Guilda:</b> Seu registro está em ordem.');return
-  }
-  if(near(guild.captain,72)){
-   if(mission===S.CAPTAIN)setDialog('<b>Capitão:</b> Agora que você está registrado, já pode assumir missões Rank F. Veja o Quadro ao meu lado. Comece pela infestação de Goblins.',[['Entendido',()=>{mission=S.BOARD;closeDialog();save();updateHud()}]]);
-   else if(mission===S.CAPTAIN_AFTER)setDialog('<b>Capitão:</b> Bom trabalho. Você completou sua primeira missão oficial. A partir de agora, a Guilda reconhecerá seu progresso e novas missões serão liberadas conforme seu desempenho.',[['Continuar',()=>{mission=S.DONE;closeDialog();save();updateHud();toastMsg('Tutorial concluído!')}]]);
-   else setDialog('<b>Capitão:</b> Continue seguindo seu objetivo atual.');return
-  }
-  if(near(guild.board,68)){
-   if(mission===S.BOARD)setDialog('<b>Quadro de Missões</b><hr>✅ <b>Rank F — Infestação de Goblins</b><br>Objetivo: eliminar 5 goblins.<br><br>🔒 Rank F — ???<br>🔒 Rank E — Patrulha das Ruínas<br>🔒 Rank E — Escolta de Sobreviventes',[['Aceitar missão',()=>{mission=S.PORTAL;closeDialog();save();updateHud()}],['Voltar',closeDialog]]);else setDialog('<b>Quadro de Missões</b><br>As demais missões ainda estão bloqueadas.');return
-  }
- }
- if(world==='camp'&&goblins.filter(g=>g.dead).length>=5&&near(camp.returnPortal,86)){setDialog('<b>Portal de retorno</b><br>A missão foi concluída. Volte à Guilda para entregar a prova.',[['Retornar à cidade',()=>{closeDialog();returnCity()}],['Ficar',closeDialog]])}
-}
-function enterCamp(){world='camp';mission=S.GOBLINS;player.x=160;player.y=610;player.hp=player.maxHp;spawnGoblins();projectiles=[];save();toastMsg('Acampamento Goblin — Rank F')}
-function returnCity(){world='city';mission=S.RETURN_GUILD;player.x=1260;player.y=650;projectiles=[];save();updateHud();toastMsg('Retorno à Cidade Inicial')}
-function hitGoblin(g,d){if(g.dead)return;g.hp-=d;if(g.hp<=0){g.hp=0;g.dead=true;g.state='dead';toastMsg('Goblin derrotado');save();if(goblins.filter(x=>x.dead).length>=5){} }updateHud()}
-function basicAttack(dx,dy){if(!player||(!dx&&!dy))return;const m=Math.hypot(dx,dy)||1;dx/=m;dy/=m;player.facing={x:dx,y:dy};if(player.class==='Mago'){const cost=Math.random()<.5?0:1;if(player.mana<cost){toastMsg('Mana insuficiente');return}player.mana-=cost}if(world!=='camp'){updateHud();return}if(player.class==='Mago'||player.class==='Arqueiro')projectiles.push({x:player.x+dx*24,y:player.y+dy*24,vx:dx*430,vy:dy*430,r:6,life:1.2,damage:player.class==='Mago'?12:10});else{const range=player.class==='Ladino'?65:78,damage=player.class==='Ladino'?10:14;for(const g of goblins){if(g.dead)continue;const gx=g.x-player.x,gy=g.y-player.y,dist=Math.hypot(gx,gy);if(dist<range&&((gx*dx+gy*dy)/(dist||1))>.35)hitGoblin(g,damage)}}updateHud()}
-function circleRectHit(cx,cy,r,o){const qx=Math.max(o.x,Math.min(cx,o.x+o.w)),qy=Math.max(o.y,Math.min(cy,o.y+o.h));return Math.hypot(cx-qx,cy-qy)<r}
-function tryMove(nx,ny){const map=world==='city'?city:world==='guild'?guild:camp,obs=map.obstacles||[];nx=Math.max(28,Math.min(map.w-28,nx));ny=Math.max(28,Math.min(map.h-28,ny));let tx=nx,ty=player.y;if(!obs.some(o=>circleRectHit(tx,ty,player.r,o)))player.x=tx;tx=player.x;ty=ny;if(!obs.some(o=>circleRectHit(tx,ty,player.r,o)))player.y=ty}
-function hurtPlayer(d){player.hp=Math.max(0,player.hp-d);dangerFlash.style.opacity=.28;setTimeout(()=>dangerFlash.style.opacity=0,110);if(player.hp<=0){player.hp=player.maxHp;player.x=160;player.y=610;for(const g of goblins){if(!g.dead){g.state='idle';g.cooldown=.8;g.windup=0}}toastMsg('Você caiu e retornou à entrada do portal.');save()}updateHud()}
-function updateGoblin(g,dt){if(g.dead)return;g.cooldown=Math.max(0,g.cooldown-dt);const dx=player.x-g.x,dy=player.y-g.y,d=Math.hypot(dx,dy)||1;if(g.state==='windup'){g.windup-=dt;if(g.windup<=0){if(Math.hypot(player.x-g.attackX,player.y-g.attackY)<48)hurtPlayer(12);g.state='recover';g.cooldown=.75;g.windup=.28}return}if(g.state==='recover'){g.windup-=dt;if(g.windup<=0)g.state='idle';return}if(d<68&&g.cooldown<=0){g.state='windup';g.windup=.62;g.attackX=player.x;g.attackY=player.y;return}if(d<230&&d>58){const nx=g.x+dx/d*58*dt,ny=g.y+dy/d*58*dt;if(!(camp.obstacles||[]).some(o=>circleRectHit(nx,ny,g.r,o))){g.x=nx;g.y=ny}}}
-function update(dt){if(!player||dialog.style.display==='block')return;let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+moveVec.x,dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+moveVec.y,l=Math.hypot(dx,dy);if(l>1){dx/=l;dy/=l}if(l>.05){tryMove(player.x+dx*player.speed*dt,player.y+dy*player.speed*dt);player.facing={x:dx,y:dy}}player.mana=Math.min(player.maxMana,player.mana+dt*.45);player.stamina=Math.min(player.maxStamina,player.stamina+dt*8);if(world==='camp'){for(const p of projectiles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;for(const g of goblins)if(!g.dead&&p.life>0&&Math.hypot(p.x-g.x,p.y-g.y)<g.r+p.r){hitGoblin(g,p.damage);p.life=0}}projectiles=projectiles.filter(p=>p.life>0);goblins.forEach(g=>updateGoblin(g,dt));if(goblins.filter(g=>g.dead).length>=5&&mission===S.GOBLINS){} }saveTimer+=dt;if(saveTimer>4){saveTimer=0;save()}updateHud()}
-function target(){if(world==='camp'&&mission===S.GOBLINS){const alive=goblins.find(g=>!g.dead);return alive||camp.returnPortal}if(world==='city'){if(mission===S.GO_GUILD||mission===S.RETURN_GUILD)return city.guildDoor;if(mission===S.PORTAL)return city.portal}if(world==='guild'){if(mission===S.REGISTER||mission===S.REPORT)return guild.reception;if(mission===S.CAPTAIN||mission===S.CAPTAIN_AFTER)return guild.captain;if(mission===S.BOARD)return guild.board;if(mission===S.PORTAL)return guild.exit}return null}
-function arrowToTarget(){const t=target();if(!t)return;const sx=t.x-cam.x,sy=t.y-cam.y;if(sx>35&&sx<W-35&&sy>35&&sy<H-35){ctx.strokeStyle='#ffd84d';ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx,sy,28+Math.sin(performance.now()/180)*4,0,Math.PI*2);ctx.stroke();ctx.lineWidth=1;return}const cx=W/2,cy=H/2,dx=sx-cx,dy=sy-cy,a=Math.atan2(dy,dx),r=Math.min(W,H)*.39,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle='#ffd84d';ctx.beginPath();ctx.moveTo(16,0);ctx.lineTo(-10,-9);ctx.lineTo(-5,0);ctx.lineTo(-10,9);ctx.closePath();ctx.fill();ctx.restore()}
-function draw(){ctx.clearRect(0,0,W,H);if(!player)return;const map=world==='city'?city:world==='guild'?guild:camp;cam.x=Math.max(0,Math.min(map.w-W,player.x-W/2));cam.y=Math.max(0,Math.min(map.h-H,player.y-H/2));ctx.save();ctx.translate(-cam.x,-cam.y);if(world==='city')drawCity();else if(world==='guild')drawGuild();else drawCamp();drawPlayer();ctx.restore();arrowToTarget();drawAim();updateHint()}
-function label(t,x,y,color='#fff',size=12){ctx.fillStyle=color;ctx.font=`${size}px system-ui`;ctx.fillText(t,x,y)}function npc(x,y,name,color,quest){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.fill();label(name,x-35,y-28);if(quest)label('!',x-3,y-38,'#ffd84d',18)}function portal(x,y){ctx.strokeStyle='#936fe0';ctx.lineWidth=7;ctx.beginPath();ctx.ellipse(x,y,31,46,0,0,Math.PI*2);ctx.stroke();ctx.lineWidth=1}function drawObstacle(o,color='#4b4338'){ctx.fillStyle=color;ctx.fillRect(o.x,o.y,o.w,o.h);ctx.strokeStyle='#0005';ctx.strokeRect(o.x,o.y,o.w,o.h)}
-function drawCity(){ctx.fillStyle='#283129';ctx.fillRect(0,0,city.w,city.h);ctx.fillStyle='#3b403a';for(let x=0;x<city.w;x+=64)for(let y=0;y<city.h;y+=64)if((x+y)%128===0)ctx.fillRect(x,y,32,32);city.obstacles.forEach((o,i)=>drawObstacle(o,i<3?'#55483b':'#40372f'));label('GUILDA DOS AVENTUREIROS',655,165,'#ead8a8',16);ctx.fillStyle='#2f241d';ctx.fillRect(745,265,90,35);label('ENTRADA',758,287,'#fff');portal(city.portal.x,city.portal.y);label('Portal Rank F',city.portal.x-48,city.portal.y+60,'#d9c7ff');npc(470,500,'Sobrevivente','#9fa7b2',false);npc(1080,480,'Ferreiro','#9fa7b2',false)}
-function drawGuild(){ctx.fillStyle='#3a3027';ctx.fillRect(0,0,guild.w,guild.h);ctx.fillStyle='#594b3d';for(let x=0;x<guild.w;x+=64)for(let y=0;y<guild.h;y+=64)ctx.strokeRect(x,y,64,64);guild.obstacles.forEach((o,i)=>drawObstacle(o,i===0?'#6b5137':'#4d4034'));label('BALCÃO DE REGISTRO',165,162,'#ead8a8',14);npc(guild.reception.x,guild.reception.y,'Atendente','#d7a9b9',mission===S.REGISTER||mission===S.REPORT);npc(guild.captain.x,guild.captain.y,'Capitão','#d2b48c',mission===S.CAPTAIN||mission===S.CAPTAIN_AFTER);ctx.fillStyle='#5b4630';ctx.fillRect(guild.board.x-24,guild.board.y-34,48,68);label('Quadro',guild.board.x-28,guild.board.y+50,'#ddd');label('CAPITÃO + QUADRO DE MISSÕES',650,105,'#ead8a8',14);ctx.fillStyle='#2b211b';ctx.fillRect(500,640,80,40);label('SAÍDA',515,666,'#fff');npc(520,290,'Aventureiro','#9fa7b2',false);npc(570,360,'Aventureira','#9fa7b2',false)}
-function drawCamp(){ctx.fillStyle='#263326';ctx.fillRect(0,0,camp.w,camp.h);ctx.fillStyle='#413728';ctx.fillRect(90,560,900,80);camp.obstacles.forEach(o=>drawObstacle(o,'#4c3b28'));for(const g of goblins){if(g.dead)continue;if(g.state==='windup'){ctx.fillStyle='#d33a';ctx.beginPath();ctx.arc(g.attackX,g.attackY,48,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ff6565';ctx.stroke()}ctx.fillStyle='#628b45';ctx.beginPath();ctx.arc(g.x,g.y,g.r,0,Math.PI*2);ctx.fill();label('Goblin',g.x-26,g.y-26,'#d7efc4');ctx.fillStyle='#222';ctx.fillRect(g.x-22,g.y+24,44,5);ctx.fillStyle='#b84b4b';ctx.fillRect(g.x-22,g.y+24,44*g.hp/g.maxHp,5)}if(goblins.filter(g=>g.dead).length>=5){portal(camp.returnPortal.x,camp.returnPortal.y);label('Retorno',camp.returnPortal.x-30,camp.returnPortal.y-48,'#ddd')}}
-function drawPlayer(){ctx.fillStyle=player.class==='Mago'?'#7187d8':player.class==='Arqueiro'?'#6f9b60':player.class==='Ladino'?'#775f88':'#a8aeb8';ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(player.x,player.y);ctx.lineTo(player.x+player.facing.x*26,player.y+player.facing.y*26);ctx.stroke();label(player.name,player.x-30,player.y-27);for(const p of projectiles){ctx.fillStyle=player.class==='Mago'?'#8bb8ff':'#ddd08c';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()}}
-function drawAim(){if(matchMedia('(pointer:coarse)').matches)return;ctx.strokeStyle='#ffffff88';ctx.beginPath();ctx.arc(mouse.x,mouse.y,9,0,Math.PI*2);ctx.moveTo(mouse.x-14,mouse.y);ctx.lineTo(mouse.x+14,mouse.y);ctx.moveTo(mouse.x,mouse.y-14);ctx.lineTo(mouse.x,mouse.y+14);ctx.stroke()}
-function currentInteract(){if(!player)return'';if(world==='city'){if(near(city.guildDoor,82))return'Entrar na Guilda';if(near(city.portal,82)&&mission===S.PORTAL)return'Portal Rank F'}if(world==='guild'){if(near(guild.exit,82))return'Sair da Guilda';if(near(guild.reception,78))return'Atendente';if(near(guild.captain,78))return'Capitão';if(near(guild.board,78))return'Quadro de Missões'}if(world==='camp'&&goblins.filter(g=>g.dead).length>=5&&near(camp.returnPortal,82))return'Portal de retorno';return''}
-function updateHint(){const n=currentInteract();hint.textContent=n?`${matchMedia('(pointer:coarse)').matches?'Botão INTERAGIR':'E'} — ${n}`:'';hint.style.display=n?'block':'none';document.getElementById('interactBtn').style.opacity=n?'1':'.38'}
-function loop(t){const dt=Math.min(.033,(t-last)/1000);last=t;update(dt);draw();requestAnimationFrame(loop)}
-addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key.toLowerCase()==='e')interact()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();mouse.x=(e.clientX-r.left)*W/r.width;mouse.y=(e.clientY-r.top)*H/r.height});c.addEventListener('mousedown',e=>{if(e.button!==0||!player||dialog.style.display==='block')return;basicAttack(mouse.x+cam.x-player.x,mouse.y+cam.y-player.y)});c.addEventListener('contextmenu',e=>e.preventDefault());document.getElementById('interactBtn').addEventListener('pointerdown',e=>{e.preventDefault();interact()});
-function bindStick(id,onMove,onReleaseAttack=false){const el=document.getElementById(id),knob=el.querySelector('.knob');let active=false,start={x:0,y:0},lastV={x:0,y:0};const reset=()=>{active=false;knob.style.transform='translate(0,0)';if(!onReleaseAttack)onMove(0,0)};el.addEventListener('pointerdown',e=>{active=true;el.setPointerCapture(e.pointerId);const r=el.getBoundingClientRect();start={x:r.left+r.width/2,y:r.top+r.height/2};e.preventDefault()});el.addEventListener('pointermove',e=>{if(!active)return;let dx=e.clientX-start.x,dy=e.clientY-start.y,max=42,l=Math.hypot(dx,dy)||1;if(l>max){dx=dx/l*max;dy=dy/l*max}lastV={x:dx/max,y:dy/max};knob.style.transform=`translate(${dx}px,${dy}px)`;onMove(lastV.x,lastV.y);e.preventDefault()});el.addEventListener('pointerup',e=>{if(onReleaseAttack&&Math.hypot(lastV.x,lastV.y)>.18)basicAttack(lastV.x,lastV.y);reset();lastV={x:0,y:0};e.preventDefault()});el.addEventListener('pointercancel',reset)}
-bindStick('moveStick',(x,y)=>moveVec={x,y});bindStick('attackStick',()=>{},true);
-document.getElementById('newBtn').onclick=()=>{document.getElementById('menuScreen').style.display='none';document.getElementById('createScreen').style.display='flex'};document.getElementById('continueBtn').onclick=()=>{if(!load())toastMsg('Nenhum save encontrado')};document.getElementById('backBtn').onclick=()=>{document.getElementById('createScreen').style.display='none';document.getElementById('menuScreen').style.display='flex'};document.querySelectorAll('.sex').forEach(el=>el.onclick=()=>{document.querySelectorAll('.sex').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');selectedSex=el.dataset.sex});document.querySelectorAll('.cls').forEach(el=>el.onclick=()=>{document.querySelectorAll('.cls').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');selectedClass=el.dataset.class});document.getElementById('confirmBtn').onclick=()=>{const name=document.getElementById('nameInput').value.trim();if(name.length<2){alert('Digite um nome com pelo menos 2 caracteres.');return}player=P(name,selectedSex,selectedClass);world='city';mission=S.GO_GUILD;goblins=[];save();showGame();toastMsg('Classe confirmada e bloqueada')};requestAnimationFrame(loop);
-})();
-</script></body></html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#08111b">
+<title>Despertar Online v1.0</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app">
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-backdrop"></div>
+    <div class="auth-panel">
+      <div class="brand-lockup">
+        <div class="brand-mark">✦</div>
+        <div><h1>DESPERTAR</h1><p>A humanidade ainda sonha</p></div>
+      </div>
+      <div class="auth-tabs"><button data-auth-tab="login" class="active">Entrar</button><button data-auth-tab="register">Criar personagem</button></div>
+      <form id="loginForm" class="auth-form active">
+        <label>Nome ou e-mail</label><input id="loginName" autocomplete="username" placeholder="Aventureiro">
+        <label>Senha</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+        <button class="gold-btn" type="submit">Entrar no mundo</button>
+        <button class="ghost-btn" type="button" id="guestBtn">Continuar save local</button>
+        <p class="auth-note">Servidor online será ativado quando o backend dedicado do Despertar for conectado. Esta build preserva seu progresso local.</p>
+      </form>
+      <form id="registerForm" class="auth-form">
+        <label>Nome do personagem</label><input id="regName" maxlength="18" placeholder="Desperto">
+        <label>E-mail</label><input id="regEmail" type="email" placeholder="voce@exemplo.com">
+        <label>Senha</label><input id="regPassword" type="password" minlength="6" placeholder="mínimo 6 caracteres">
+        <div class="class-picks" id="classPicks"></div>
+        <button class="gold-btn" type="submit">Criar personagem</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="gameShell" class="game-shell hidden">
+    <header class="topbar">
+      <button id="brandHome" class="brand-mini"><span>✦</span><b>DESPERTAR</b></button>
+      <div class="player-summary">
+        <img id="playerPortrait" alt="Personagem">
+        <div class="player-name"><b id="hudName">Desperto</b><span id="hudClass">Guerreiro • Nv.1</span></div>
+        <div class="meters"><div><span>HP</span><i><em id="hpBar"></em></i><small id="hpText">100/100</small></div><div><span>ENERGIA</span><i><em id="energyBar"></em></i><small id="energyText">100/100</small></div></div>
+      </div>
+      <div class="economy"><span>◉ <b id="goldValue">300</b></span><span>✦ <b id="cashValue">0</b></span><span>⚑ <b id="rankValue">F</b></span></div>
+      <button id="mobileNavToggle" class="icon-btn">☰</button>
+    </header>
+
+    <div class="layout">
+      <aside id="sideNav" class="side-nav">
+        <button data-page="city" class="active"><span>⌂</span>Cidade</button>
+        <button data-page="character"><span>♟</span>Personagem</button>
+        <button data-page="inventory"><span>▣</span>Inventário</button>
+        <button data-page="skills"><span>✦</span>Habilidades</button>
+        <button data-page="missions"><span>▤</span>Missões</button>
+        <button data-page="work"><span>⚒</span>Trabalhos</button>
+        <button data-page="hunt"><span>⚔</span>Caçadas</button>
+        <button data-page="map"><span>✥</span>Mapa</button>
+        <button data-page="guild"><span>⚑</span>Guilda</button>
+        <button data-page="ranking"><span>♛</span>Ranking</button>
+        <button data-page="social"><span>☷</span>Social</button>
+        <button data-page="settings"><span>⚙</span>Config.</button>
+      </aside>
+
+      <main id="mainStage" class="main-stage" tabindex="-1"></main>
+
+      <aside class="right-rail">
+        <section class="server-card">
+          <div><span class="status-dot local"></span><b id="serverName">Servidor Teste</b></div>
+          <small id="serverStatus">Persistência local • backend dedicado pendente</small>
+        </section>
+        <section class="chat-card">
+          <div class="chat-tabs" id="chatTabs"><button data-chat="global" class="active">Geral</button><button data-chat="trade">Comércio</button><button data-chat="clan">Clã</button><button data-chat="alliance">Aliança</button><button data-chat="private">Privado</button></div>
+          <div id="chatLog" class="chat-log"></div>
+          <form id="chatForm" class="chat-form"><input id="chatInput" maxlength="160" placeholder="Digite uma mensagem..."><button>➤</button></form>
+        </section>
+        <section class="online-list"><div class="panel-title">Jogadores online</div><div id="onlinePlayers"></div></section>
+      </aside>
+    </div>
+
+    <footer class="footerbar"><span>DESPERTAR ONLINE v1.0</span><span id="footerLocation">Esperança</span><span>A HUMANIDADE AINDA SONHA</span></footer>
+  </section>
+
+  <div id="modalRoot" class="modal-root hidden"></div>
+  <div id="toast" class="toast"></div>
+</div>
+<script src="art.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
