@@ -24,49 +24,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build v0.9.0
+      - name: Preparar build browser MMORPG v1.0
         run: |
+          rm -rf _site
           mkdir -p _site
-          cp index.html _site/index.html
-          cp story-v0.7.css _site/story-v0.7.css
-          cp story-v0.7.js _site/story-v0.7.js
+          cp index.html app.css app.js art.js _site/
           cp -r assets _site/assets
-          python3 build-v071.py
-          python3 campaign-patch-v071.py
-          python3 run-gameplay-v072.py
-          python3 dialogue-patch-v073.py
-          python3 chapter2-patch-v074.py
-          python3 story-fix-v074.py
-          python3 chapter3-patch-v075.py
-          python3 chapter4-patch-v076.py
-          python3 systems-patch-v080.py
-          python3 story-cap-v080.py
-          python3 mission-completion-patch-v081.py
-          python3 visual-overhaul-v090.py
 
-      - name: Validar build v0.9.0
+      - name: Validar build v1.0
         run: |
+          test -f _site/index.html
+          test -f _site/app.css
+          test -f _site/app.js
+          test -f _site/art.js
           test -f _site/assets/scenes/city.svg
           test -f _site/assets/scenes/guild.svg
           test -f _site/assets/sprites/guerreiro.svg
           test -f _site/assets/sprites/mago.svg
           test -f _site/assets/sprites/arqueiro.svg
           test -f _site/assets/sprites/ladino.svg
-          test -f _site/assets/sprites/elena-portrait.svg
-          grep -q 'v0.9.0' _site/index.html
-          grep -q 'sceneLayer' _site/index.html
-          grep -q 'sideCombatWorld' _site/index.html
+          grep -q 'DESPERTAR ONLINE v1.0' _site/index.html
+          grep -q 'data-page="guild"' _site/index.html
+          grep -q "KeyW" _site/app.js
+          grep -q "KeyA" _site/app.js
+          grep -q "KeyS" _site/app.js
+          grep -q "KeyD" _site/app.js
+          grep -q "Infestação de Goblins" _site/app.js
+          node --check _site/app.js
+          node --check _site/art.js
           python3 - <<'PY'
           from pathlib import Path
-          import re
           html = Path('_site/index.html').read_text(encoding='utf-8')
-          scripts = re.findall(r'<script>(.*?)</script>', html, flags=re.S)
-          if not scripts:
-              raise SystemExit('Nenhum JavaScript inline encontrado em index.html')
-          Path('/tmp/despertar-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          required = ['authScreen','gameShell','mainStage','chatLog','sideNav']
+          missing = [x for x in required if f'id="{x}"' not in html]
+          if missing:
+              raise SystemExit('DOM obrigatório ausente: ' + ', '.join(missing))
+          print('Smoke DOM OK')
           PY
-          node --check /tmp/despertar-inline.js
-          node --check _site/story-v0.7.js
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
