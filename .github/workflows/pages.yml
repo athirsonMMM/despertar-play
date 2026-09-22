@@ -24,14 +24,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build browser MMORPG v1.0.2
+      - name: Preparar build browser MMORPG v1.0.3
         run: |
           rm -rf _site
           mkdir -p _site
           cp index.html app.css app.js art.js _site/
           cp -r assets _site/assets
 
-      - name: Validar build v1.0.2
+      - name: Validar build v1.0.3
         run: |
           test -f _site/index.html
           test -f _site/app.css
@@ -47,7 +47,7 @@ jobs:
           test -f _site/assets/real/elena.webp
           test -f _site/assets/real/goblin-sheet.png
           test -f _site/assets/real/portal.png
-          grep -q 'DESPERTAR ONLINE v1.0.2' _site/index.html
+          grep -q 'DESPERTAR ONLINE v1.0.3' _site/index.html
           grep -q 'data-page="guild"' _site/index.html
           grep -q "KeyW" _site/app.js
           grep -q "KeyA" _site/app.js
@@ -61,6 +61,18 @@ jobs:
           grep -q "ART.mobs" _site/app.js
           grep -q "ART.portal" _site/app.js
           grep -Fq "document.querySelectorAll('[data-battle]')" _site/app.js
+          grep -Fq "generatedAttributes(selectedRegisterClass)" _site/app.js
+          grep -Fq "attributePoints" _site/app.js
+          grep -Fq "function combatPower()" _site/app.js
+          grep -Fq "function spawnProjectile" _site/app.js
+          grep -Fq "fx-sword-slash" _site/app.css
+          grep -Fq "projectile-fireball" _site/app.css
+          grep -Fq "projectile-arrow" _site/app.css
+          grep -Fq "$('[data-page]').forEach" _site/app.js
+          if grep -Fq "attackBattle(" _site/app.js; then
+            echo "Handler antigo de ataque ainda presente"
+            exit 1
+          fi
           if grep -q "goblin-body" _site/app.js; then
             echo "Placeholder geométrico de Goblin ainda presente"
             exit 1
