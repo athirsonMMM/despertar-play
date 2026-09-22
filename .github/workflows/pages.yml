@@ -24,19 +24,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar build browser MMORPG v1.0.1
+      - name: Preparar build browser MMORPG v1.0.2
         run: |
           rm -rf _site
           mkdir -p _site
           cp index.html app.css app.js art.js _site/
           cp -r assets _site/assets
 
-      - name: Validar build v1.0.1
+      - name: Validar build v1.0.2
         run: |
           test -f _site/index.html
           test -f _site/app.css
           test -f _site/app.js
           test -f _site/art.js
+          test -f _site/assets/real/city-bg.webp
           test -f _site/assets/real/city.webp
           test -f _site/assets/real/guild.webp
           test -f _site/assets/real/guerreiro-sheet.png
@@ -44,7 +45,9 @@ jobs:
           test -f _site/assets/real/arqueiro-sheet.png
           test -f _site/assets/real/ladino-sheet.png
           test -f _site/assets/real/elena.webp
-          grep -q 'DESPERTAR ONLINE v1.0.1' _site/index.html
+          test -f _site/assets/real/goblin-sheet.png
+          test -f _site/assets/real/portal.png
+          grep -q 'DESPERTAR ONLINE v1.0.2' _site/index.html
           grep -q 'data-page="guild"' _site/index.html
           grep -q "KeyW" _site/app.js
           grep -q "KeyA" _site/app.js
@@ -54,6 +57,14 @@ jobs:
           grep -q "battleScene" _site/app.js
           grep -q "ShiftLeft" _site/app.js
           grep -q "battle-mobile-controls" _site/app.css
+          grep -q "goblin-sprite" _site/app.js
+          grep -q "ART.mobs" _site/app.js
+          grep -q "ART.portal" _site/app.js
+          grep -q "querySelectorAll('\''[data-battle]'\'')" _site/app.js
+          if grep -q "goblin-body" _site/app.js; then
+            echo "Placeholder geométrico de Goblin ainda presente"
+            exit 1
+          fi
           node --check _site/app.js
           node --check _site/art.js
           python3 - <<'PY'
