@@ -5,9 +5,37 @@ Guerreiro:{role:'Linha de frente',stats:{FOR:8,VIT:10,AGI:4,INT:2,DEX:4,SORTE:2}
 Mago:{role:'Controle arcano',stats:{FOR:2,VIT:5,AGI:4,INT:10,DEX:5,SORTE:3},skills:['Bola de Fogo','Nova Arcana','Passo Etéreo','Barreira']},
 Arqueiro:{role:'Precisão e alcance',stats:{FOR:4,VIT:6,AGI:8,INT:3,DEX:10,SORTE:4},skills:['Disparo Rápido','Tiro Preciso','Passo do Caçador','Chuva de Flechas']},
 Ladino:{role:'Mobilidade e crítico',stats:{FOR:5,VIT:5,AGI:10,INT:3,DEX:9,SORTE:5},skills:['Ataque Rápido','Golpe pelas Costas','Desaparecer','Dança das Lâminas']}};
+const combatKit={
+Guerreiro:{
+  basic:{name:'Espadada',type:'melee',range:126,mult:1,fx:'sword-slash'},
+  q:{name:'Corte de Ruptura',type:'melee',range:180,mult:1.7,cost:10,fx:'sword-wave'},
+  e:{name:'Guarda de Ferro',type:'guard',duration:2.2,cost:12,fx:'guard'},
+  r:{name:'Investida',type:'dash-hit',distance:185,range:90,mult:1.35,cost:16,fx:'charge'}
+},
+Mago:{
+  basic:{name:'Projétil Arcano',type:'projectile',range:620,mult:.95,speed:560,cost:0,fx:'arcane'},
+  q:{name:'Bola de Fogo',type:'projectile',range:700,mult:1.8,speed:430,cost:14,fx:'fireball',splash:95},
+  e:{name:'Nova Arcana',type:'aoe',range:185,mult:1.45,cost:18,fx:'arcane-nova'},
+  r:{name:'Passo Etéreo',type:'teleport',distance:190,cost:12,fx:'ethereal'}
+},
+Arqueiro:{
+  basic:{name:'Flecha',type:'projectile',range:720,mult:1,speed:720,cost:0,fx:'arrow'},
+  q:{name:'Disparo Rápido',type:'multishot',range:700,mult:.72,speed:760,cost:10,shots:3,fx:'arrow'},
+  e:{name:'Tiro Preciso',type:'projectile',range:850,mult:2.1,speed:900,cost:16,fx:'piercing-arrow',pierce:true},
+  r:{name:'Passo do Caçador',type:'dash',distance:150,cost:9,fx:'hunter-step'}
+},
+Ladino:{
+  basic:{name:'Corte de Adaga',type:'melee',range:108,mult:1.05,fx:'dagger-slash'},
+  q:{name:'Ataque Rápido',type:'multi-melee',range:120,mult:.7,hits:3,cost:9,fx:'dagger-flurry'},
+  e:{name:'Golpe pelas Costas',type:'backstab',range:260,mult:2.35,cost:16,fx:'shadow-stab'},
+  r:{name:'Desaparecer',type:'vanish',duration:1.6,distance:130,cost:14,fx:'vanish'}
+}};
+const ATTR_KEYS=['FOR','VIT','AGI','INT','DEX','SORTE'];
+function generatedAttributes(className){const base={...(classes[className]?.stats||classes.Guerreiro.stats)};for(let i=0;i<4;i++){const k=ATTR_KEYS[Math.floor(Math.random()*ATTR_KEYS.length)];base[k]++}return base}
+function ensureAttributes(){if(!state.player.attributes)state.player.attributes={...(classes[state.player.class]?.stats||classes.Guerreiro.stats)};if(!Number.isFinite(state.player.attributePoints))state.player.attributePoints=0;for(const k of ATTR_KEYS)if(!Number.isFinite(state.player.attributes[k]))state.player.attributes[k]=classes[state.player.class]?.stats?.[k]||1}
 const professions=[['Ferreiro','Melhora armas, armaduras e reparos.'],['Minerador','Aumenta minério e descoberta de veios.'],['Cozinheiro','Produz refeições e bônus temporários.'],['Alquimista','Cria poções, catalisadores e antídotos.'],['Engenheiro','Constrói máquinas, defesas e geradores.'],['Pesquisador','Analisa portais, monstros e tecnologia.']];
 const chapters=[['Capítulo 1','A rua que bebeu o próprio nome','Orla e Cisterna'],['Capítulo 2','O pedágio dos ausentes','Estrada das Lanternas'],['Capítulo 3','O turno que não acabou','Pedreiras de Âmbar'],['Capítulo 4','As raízes que assinam','Jardim Suspenso']];
-const defaultState=()=>({version:100,mode:'local',account:{email:'',createdAt:new Date().toISOString()},player:{name:'Desperto',class:'Guerreiro',profession:null,level:1,xp:0,xpNext:100,hp:160,maxHp:160,energy:100,maxEnergy:100,gold:300,cash:0,rank:'—',reputation:0,pvpWins:0},resources:{madeira:120,pedra:100,ferro:60,comida:100,essencia:0},inventory:[{name:'Carteira de Sobrevivente',qty:1,rarity:'comum'},{name:'Ração de Campo',qty:3,rarity:'comum'}],skills:{points:0,levels:{}},campaign:{chapter:1,mission:'Novos Caminhos',tutorial:'go_guild',completed:[]},missions:{goblin:{accepted:false,kills:0,ready:false,turnedIn:false},daily:[]},guild:{registered:false,clan:null,alliance:null},city:{baseLevel:1,buildings:{Abrigo:1,Depósito:1,Horta:1,Oficina:0}},social:{messages:{global:[],trade:[],clan:[],alliance:[],private:[]}},ui:{page:'city',chat:'global'}});
+const defaultState=()=>({version:100,mode:'local',account:{email:'',createdAt:new Date().toISOString()},player:{name:'Desperto',class:'Guerreiro',profession:null,level:1,xp:0,xpNext:100,hp:160,maxHp:160,energy:100,maxEnergy:100,gold:300,cash:0,rank:'—',reputation:0,pvpWins:0,attributes:{FOR:8,VIT:10,AGI:4,INT:2,DEX:4,SORTE:2},attributePoints:0},resources:{madeira:120,pedra:100,ferro:60,comida:100,essencia:0},inventory:[{name:'Carteira de Sobrevivente',qty:1,rarity:'comum'},{name:'Ração de Campo',qty:3,rarity:'comum'}],skills:{points:0,levels:{}},campaign:{chapter:1,mission:'Novos Caminhos',tutorial:'go_guild',completed:[]},missions:{goblin:{accepted:false,kills:0,ready:false,turnedIn:false},daily:[]},guild:{registered:false,clan:null,alliance:null},city:{baseLevel:1,buildings:{Abrigo:1,Depósito:1,Horta:1,Oficina:0}},social:{messages:{global:[],trade:[],clan:[],alliance:[],private:[]}},ui:{page:'city',chat:'global'}});
 let selectedRegisterClass='Guerreiro',battle=null,keys=new Set(),raf=0,last=0,state=loadState();
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function merge(b,c){if(Array.isArray(b))return Array.isArray(c)?c:b;if(b&&typeof b==='object'){const o={};for(const k of new Set([...Object.keys(b),...Object.keys(c||{})]))o[k]=(k in b)?merge(b[k],c?.[k]):c[k];return o}return c??b}
@@ -20,7 +48,7 @@ function spriteStyle(c,d='front'){const f=spriteFrame(c,d);return `background-im
 function spriteHtml(c,d='front',extra=''){return `<span class="sprite-frame ${extra}" style="${spriteStyle(c,d)}" aria-label="${esc(c)}"></span>`}
 function paintSprite(el,c,d='front'){if(!el)return;const f=spriteFrame(c,d);el.style.backgroundImage=`url('${f.url}')`;el.style.backgroundPosition=f.pos;el.classList.add('sprite-frame')}
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1800)}
-function syncDerived(){const base=state.player.class==='Guerreiro'?160:state.player.class==='Mago'?110:state.player.class==='Arqueiro'?125:118;state.player.maxHp=base+(state.player.level-1)*12;state.player.hp=Math.min(state.player.hp||state.player.maxHp,state.player.maxHp);state.player.maxEnergy=100+(state.player.class==='Mago'?50:0)+(state.player.level-1)*4;state.player.energy=Math.min(state.player.energy||state.player.maxEnergy,state.player.maxEnergy)}
+function syncDerived(){ensureAttributes();const a=state.player.attributes;const classBase=state.player.class==='Guerreiro'?90:state.player.class==='Mago'?65:state.player.class==='Arqueiro'?75:70;state.player.maxHp=classBase+a.VIT*7+(state.player.level-1)*6;state.player.hp=Math.min(Math.max(1,state.player.hp||state.player.maxHp),state.player.maxHp);state.player.maxEnergy=70+a.INT*5+a.AGI*2+(state.player.class==='Mago'?35:0);state.player.energy=Math.min(Math.max(0,state.player.energy??state.player.maxEnergy),state.player.maxEnergy)}
 function renderHud(){syncDerived();$('#hudName').textContent=state.player.name;$('#hudClass').textContent=`${state.player.class} • Nv.${state.player.level}`;paintSprite($('#playerPortrait'),state.player.class,'front');$('#hpBar').style.width=`${100*state.player.hp/state.player.maxHp}%`;$('#energyBar').style.width=`${100*state.player.energy/state.player.maxEnergy}%`;$('#hpText').textContent=`${state.player.hp}/${state.player.maxHp}`;$('#energyText').textContent=`${state.player.energy}/${state.player.maxEnergy}`;$('#goldValue').textContent=state.player.gold.toLocaleString('pt-BR');$('#cashValue').textContent=state.player.cash;$('#rankValue').textContent=state.player.rank}
 function addChat(ch,name,text,system=false){const a=state.social.messages[ch]||(state.social.messages[ch]=[]);a.push({t:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),name,text,system});if(a.length>60)a.splice(0,a.length-60);save();if(state.ui.chat===ch)renderChat()}
 function seedChat(){if(state.social.messages.global.length)return;addChat('global','Sistema','Você entrou em Esperança.',true);addChat('global','Mirela','A Guilda abriu novas missões Rank F.');addChat('trade','Breno','Compro ferro e madeira. Procure a Oficina.')}
@@ -33,7 +61,7 @@ function go(p){state.ui.page=p;save();$$$('[data-page]').forEach(b=>b.classList.
 function hero(s,bg,title,sub,body,acts=''){s.innerHTML=`<section class="page"><div class="hero-scene" style="background-image:url('${bg}')"><div class="scene-copy"><div class="eyebrow">${sub}</div><h2>${title}</h2><p>${body}</p><div class="action-row">${acts}</div></div></div><div id="pageBelow"></div></section>`}
 const btn=(label,a,primary=false)=>`<button class="action-btn ${primary?'primary':''}" data-action="${a}">${label}</button>`;
 function bindActions(root=document){root.querySelectorAll('[data-action]').forEach(b=>{b.type='button';b.onclick=e=>{e.preventDefault();e.stopPropagation();const fn=actions[b.dataset.action];if(fn)fn(b);else toast('Ação indisponível nesta versão.')}})}
-function gainXp(n){state.player.xp+=n;while(state.player.xp>=state.player.xpNext){state.player.xp-=state.player.xpNext;state.player.level++;state.player.xpNext=Math.round(state.player.xpNext*1.25);state.skills.points++;toast(`Nível ${state.player.level}! +1 ponto de habilidade`)}}
+function gainXp(n){state.player.xp+=n;while(state.player.xp>=state.player.xpNext){state.player.xp-=state.player.xpNext;state.player.level++;state.player.xpNext=Math.round(state.player.xpNext*1.25);state.skills.points++;state.player.attributePoints=(state.player.attributePoints||0)+5;toast(`Nível ${state.player.level}! +5 atributos • +1 habilidade`)}syncDerived();save()}
 const actions={guild:()=>go('guild'),missions:()=>go('missions'),hunt:()=>go('hunt'),work:()=>go('work'),map:()=>go('map'),base:()=>openBase(),
 acceptGoblin:()=>{state.missions.goblin.accepted=true;state.campaign.mission='Infestação de Goblins';save();toast('Missão aceita. Portal Rank F liberado.');go('hunt')},
 startGoblin:()=>startBattle(),
