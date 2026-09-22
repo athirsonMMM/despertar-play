@@ -1,7 +1,8 @@
 window.DESPERTAR_ART={
   scenes:{
-    city:'assets/real/city.webp',
-    guild:'assets/real/guild.webp'
+    city:'assets/real/city-bg.webp',
+    guild:'assets/real/guild.webp',
+    battle:'assets/real/city-bg.webp'
   },
   portraits:{
     elena:'assets/real/elena.webp'
@@ -12,5 +13,12 @@ window.DESPERTAR_ART={
     Arqueiro:{sheet:'assets/real/arqueiro-sheet.png'},
     Ladino:{sheet:'assets/real/ladino-sheet.png'}
   },
+  mobs:{
+    goblin:{
+      sheet:'assets/real/goblin-sheet.png',
+      frames:{idle:0,walk1:1,walk2:2,attack:3,hit:4,dead:5}
+    }
+  },
+  portal:'assets/real/portal.png',
   frames:{front:0,right:2,left:6,back:4}
 };
