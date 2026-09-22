@@ -60,7 +60,7 @@ jobs:
           grep -q "goblin-sprite" _site/app.js
           grep -q "ART.mobs" _site/app.js
           grep -q "ART.portal" _site/app.js
-          grep -q "querySelectorAll('\''[data-battle]'\'')" _site/app.js
+          grep -Fq "document.querySelectorAll('[data-battle]')" _site/app.js
           if grep -q "goblin-body" _site/app.js; then
             echo "Placeholder geométrico de Goblin ainda presente"
             exit 1
