@@ -1,8 +1,8 @@
 window.DESPERTAR_ART={
   scenes:{
-    city:'assets/real/city-bg.webp',
+    city:'assets/real/city.webp',
     guild:'assets/real/guild.webp',
-    battle:'assets/real/city-bg.webp'
+    battle:'assets/real/city.webp'
   },
   portraits:{
     elena:'assets/real/elena.webp'
